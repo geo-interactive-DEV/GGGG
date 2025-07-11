@@ -1,12 +1,4 @@
 python-dotenv
-os
-json
 discord
 requests
-asyncio
-datetime 
-uuid
-random
-string
 pymongo
-io
