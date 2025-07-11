@@ -8,5 +8,5 @@ datetime
 uuid
 random
 string
-pymongo import MongoClient
+pymongo
 io
