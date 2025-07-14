@@ -95,8 +95,7 @@ def review_game():
 
 # ---- Initialize DB ----
 
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
 
 # ---- Run server ----
