@@ -6,10 +6,11 @@ from flask_jwt_extended import (
 from flask_pymongo import PyMongo
 from datetime import timedelta
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb+srv://hello:yOf5ELAjmDxW78jO@cluster0.quncdr4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-app.config["JWT_SECRET_KEY"] = "super-secret-key"
+app.config["JWT_SECRET_KEY"] = "super-secret-key"  # Change this for production!
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
 mongo = PyMongo(app)
@@ -24,9 +25,10 @@ def signup():
     data = request.get_json()
     if users.find_one({"username": data["username"]}):
         return jsonify({"msg": "Username taken"}), 400
+    hashed_pw = generate_password_hash(data["password"])
     users.insert_one({
         "username": data["username"],
-        "password": data["password"],  # Hash in prod!
+        "password": hashed_pw,
         "is_admin": False
     })
     return jsonify({"msg": "User created"}), 201
@@ -35,8 +37,8 @@ def signup():
 @app.route("/auth/login", methods=["POST"])
 def login():
     data = request.get_json()
-    user = users.find_one({"username": data["username"], "password": data["password"]})
-    if not user:
+    user = users.find_one({"username": data["username"]})
+    if not user or not check_password_hash(user["password"], data["password"]):
         return jsonify({"msg": "Bad username or password"}), 401
     access_token = create_access_token(identity={
         "id": str(user["_id"]),
